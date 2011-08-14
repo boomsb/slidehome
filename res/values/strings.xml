@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, SlideHome!</string>
+    <string name="app_name">slidehome</string>
+    <string name="show_all_apps">All</string>
+</resources>
