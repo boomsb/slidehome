@@ -65,35 +65,28 @@ containing a value of this type.
         public static final int bright_text_dark_focused=0x7f070000;
     }
     public static final class drawable {
-        public static final int all_applications=0x7f020000;
-        public static final int all_applications_background=0x7f020001;
-        public static final int all_applications_button_background=0x7f020002;
-        public static final int all_applications_label_background=0x7f020003;
-        public static final int application_background=0x7f020004;
-        public static final int application_background_static=0x7f020005;
-        public static final int favorite_background=0x7f020006;
-        public static final int focused_application_background_static=0x7f020007;
-        public static final int grid_selector=0x7f020008;
-        public static final int ic_launcher_allhide=0x7f020009;
-        public static final int ic_launcher_allshow=0x7f02000a;
-        public static final int icon=0x7f02000b;
-        public static final int pressed_application_background_static=0x7f02000c;
+        public static final int all_applications_background=0x7f020000;
+        public static final int all_applications_button_background=0x7f020001;
+        public static final int all_applications_label_background=0x7f020002;
+        public static final int application_background=0x7f020003;
+        public static final int application_background_static=0x7f020004;
+        public static final int favorite_background=0x7f020005;
+        public static final int focused_application_background_static=0x7f020006;
+        public static final int grid_selector=0x7f020007;
+        public static final int icon=0x7f020008;
+        public static final int pressed_application_background_static=0x7f020009;
     }
     public static final class id {
-        public static final int all_apps=0x7f040005;
-        public static final int faves_and_recents=0x7f040006;
+        public static final int all_apps=0x7f040003;
         public static final int horizontal=0x7f040000;
-        public static final int label=0x7f040004;
-        public static final int show_all_apps=0x7f040002;
-        public static final int show_all_apps_check=0x7f040003;
+        public static final int label=0x7f040002;
         public static final int vertical=0x7f040001;
     }
     public static final class layout {
-        public static final int all_applications_button=0x7f030000;
-        public static final int application=0x7f030001;
-        public static final int favorite=0x7f030002;
-        public static final int home=0x7f030003;
-        public static final int main=0x7f030004;
+        public static final int application=0x7f030000;
+        public static final int favorite=0x7f030001;
+        public static final int home=0x7f030002;
+        public static final int main=0x7f030003;
     }
     public static final class string {
         public static final int app_name=0x7f050001;

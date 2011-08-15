@@ -3,9 +3,6 @@ package cmspooner.slidehome;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,15 +23,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 
-public class SlideHome extends Activity {
+public class SlideHome extends Activity{
 	
 	private static ArrayList<ApplicationInfo> mApplications;
 	
-	private ApplicationsStackLayout mApplicationsStack;
 	private GridView mGrid;
 	
     /** Called when the activity is first created. */
@@ -58,14 +55,6 @@ public class SlideHome extends Activity {
 
         
         bindApplications();
-        
-//        //?
-//        bindFavorites(true);
-//        bindRecents();
-//        bindButtons();
-
-//        mGridEntry = AnimationUtils.loadAnimation(this, R.anim.grid_entry);
-//        mGridExit = AnimationUtils.loadAnimation(this, R.anim.grid_exit);
         
     }
     
@@ -130,21 +119,11 @@ public class SlideHome extends Activity {
        
         mGrid.setAdapter(new ApplicationsAdapter(this, mApplications));
         mGrid.setSelection(0);
-
-        if (mApplicationsStack == null) {
-            mApplicationsStack = (ApplicationsStackLayout) findViewById(R.id.faves_and_recents);
-        }
         
-        System.out.println("-------bindApplications Testing----------");
-        if (mGrid == null) System.out.println("mGrid did not initialize!"); 
-        	else System.out.println("mGrid initialized just fine...i think!");
-        if (mApplications == null) System.out.println("mApplications did not initialize!");
-    		else System.out.println("mApplications initialized just fine...i think!");
-        if (mApplicationsStack == null) System.out.println("mApplicationsStack did not initialize!");
-    		else System.out.println("mApplicationsStack initialized just fine...i think!");
-        System.out.println("-------------------------------------");
-
+        mGrid.setOnItemClickListener(new ApplicationLauncher());
     }
+    
+ 
     
     /**
      * FROM ANDROID...No Changes...yet
@@ -223,6 +202,16 @@ public class SlideHome extends Activity {
             textView.setText(info.title);
 
             return convertView;
+        }
+    }
+    
+    private class ApplicationLauncher implements AdapterView.OnItemClickListener {
+        public void onItemClick(AdapterView parent, View v, int position, long id) {
+           
+            System.out.println("-->Home.java.ApplicationLauncher: onItemClick Called"); 
+
+        	ApplicationInfo app = (ApplicationInfo) parent.getItemAtPosition(position);
+            startActivity(app.intent);
         }
     }
 }
