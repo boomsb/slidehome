@@ -3,10 +3,13 @@ package cmspooner.slidehome;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -22,6 +25,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -30,9 +35,14 @@ import android.widget.TextView;
 
 public class SlideHome extends Activity{
 	
+	private boolean isFullscreen;
+	
 	private static ArrayList<ApplicationInfo> mApplications;
 	
 	private GridView mGrid;
+	
+    private final BroadcastReceiver mApplicationsReceiver = new ApplicationsIntentReceiver();
+
 	
     /** Called when the activity is first created. */
     @Override
@@ -41,7 +51,15 @@ public class SlideHome extends Activity{
         
         System.out.println("-->SlideHome.java: onCreate Called"); 
 
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+ 
+        if (isFullscreen){
+        	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         setContentView(R.layout.home);
+        
+        registerIntentReceivers();
         
         setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
 
@@ -57,6 +75,23 @@ public class SlideHome extends Activity{
         bindApplications();
         
     }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        System.out.println("-->Home.java: onDestroy Called"); 
+
+        
+        // Remove the callback for the cached drawables or we leak
+        // the previous Home screen on orientation change
+        final int count = mApplications.size();
+        for (int i = 0; i < count; i++) {
+            mApplications.get(i).icon.setCallback(null);
+        }
+
+        unregisterReceiver(mApplicationsReceiver);
+    }
+    
     
     /**
      * FROM ANDROID...No Changes...yet
@@ -71,6 +106,10 @@ public class SlideHome extends Activity{
             return;
         }
 
+        if (mApplications == null){
+        	System.out.println("**>mApplications is null...not saved");
+        }
+        
         PackageManager manager = getPackageManager();
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
@@ -121,6 +160,17 @@ public class SlideHome extends Activity{
         mGrid.setSelection(0);
         
         mGrid.setOnItemClickListener(new ApplicationLauncher());
+    }
+    
+    private void registerIntentReceivers() {
+    	
+        System.out.println("-->Home.java: registerIntentReceivers Called"); 
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addDataScheme("package");
+        registerReceiver(mApplicationsReceiver, filter);
     }
     
  
@@ -212,6 +262,17 @@ public class SlideHome extends Activity{
 
         	ApplicationInfo app = (ApplicationInfo) parent.getItemAtPosition(position);
             startActivity(app.intent);
+        }
+    }
+    
+    private class ApplicationsIntentReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            
+            System.out.println("-->Home.java.ApplicationsIntentReceiver: onReceive Called"); 
+
+        	loadApplications(false);
+            bindApplications();
         }
     }
 }
