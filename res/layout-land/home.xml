@@ -32,7 +32,7 @@
         android:columnWidth="78dp"
         android:stretchMode="spacingWidth"
         android:layout_weight="1.0"
-        android:layout_height="0dip"
+        android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:stackFromBottom="false"
         android:visibility="visible" />
