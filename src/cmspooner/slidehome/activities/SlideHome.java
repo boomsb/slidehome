@@ -1,4 +1,4 @@
-package cmspooner.slidehome;
+package cmspooner.slidehome.activities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +37,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
+import cmspooner.slidehome.R;
 
+/**
+ * SlideHome main activity
+ *
+ * @author Chris Spooner <cmspooner@gmail.com>
+ * @author Jakub Chrzanowski <jakub@chrzanowski.info>
+ */
 public class SlideHome extends Activity {
 
 	private boolean isFullscreen;
@@ -279,16 +286,26 @@ public class SlideHome extends Activity {
 
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.phone_settings:
-			System.out.println("--->Phone Settings!");
-			startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
-			return true;
-		case R.id.home_settings:
-			System.out.println("--->Home Settings!");
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+
+            // phone setting
+            case R.id.phone_settings:
+                System.out.println("--->Phone Settings!");
+                startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                break;
+
+            // home settings
+            case R.id.home_settings:
+                System.out.println("--->Home Settings!");
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+
+            // default action
+            default:
+                return super.onOptionsItemSelected(item);
 		}
+
+        return true;
 	}
 
 	/**

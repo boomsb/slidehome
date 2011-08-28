@@ -1,4 +1,4 @@
-package cmspooner.slidehome;
+package cmspooner.slidehome.activities;
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
@@ -22,6 +22,8 @@ import android.graphics.drawable.Drawable;
 /**
  * Represents a launchable application. An application is made of a name (or title), an intent
  * and an icon.
+ *
+ * @author Chris Spooner <cmspooner@gmail.com>
  */
 class ApplicationInfo {
     /**
