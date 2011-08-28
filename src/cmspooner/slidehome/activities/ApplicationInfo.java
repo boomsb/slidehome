@@ -1,4 +1,4 @@
-package cmspooner.slidehome;
+package cmspooner.slidehome.activities;
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
@@ -18,12 +18,18 @@ package cmspooner.slidehome;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 /**
  * Represents a launchable application. An application is made of a name (or title), an intent
  * and an icon.
+ *
+ * @author Chris Spooner <cmspooner@gmail.com>
  */
 class ApplicationInfo {
+
+    private static final String TAG = ApplicationInfo.class.getCanonicalName();
+
     /**
      * The application name.
      */
@@ -51,10 +57,7 @@ class ApplicationInfo {
      * @param launchFlags the launch flags
      */
     final void setActivity(ComponentName className, int launchFlags) {
-        
-        System.out.println("-->ApplicationInfo.java: setActivity Called"); 
-
-    	intent = new Intent(Intent.ACTION_MAIN);
+        intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setComponent(className);
         intent.setFlags(launchFlags);
@@ -62,10 +65,9 @@ class ApplicationInfo {
 
     @Override
     public boolean equals(Object o) {
-        
-        System.out.println("-->ApplicationInfo.java: equals Called"); 
+        Log.d(TAG, "equals Called");
 
-    	if (this == o) {
+        if (this == o) {
             return true;
         }
         if (!(o instanceof ApplicationInfo)) {
@@ -74,19 +76,17 @@ class ApplicationInfo {
 
         ApplicationInfo that = (ApplicationInfo) o;
         return title.equals(that.title) &&
-                intent.getComponent().getClassName().equals(
-                        that.intent.getComponent().getClassName());
+               intent.getComponent().getClassName().equals(that.intent.getComponent().getClassName());
     }
 
     @Override
     public int hashCode() {
-        
-        System.out.println("-->ApplicationInfo.java: hashCode Called"); 
+        Log.d(TAG, "hashCode Called");
 
-    	int result;
-        result = (title != null ? title.hashCode() : 0);
         final String name = intent.getComponent().getClassName();
+        int result = (title != null ? title.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        
         return result;
     }
 }

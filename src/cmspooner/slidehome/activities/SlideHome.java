@@ -1,57 +1,40 @@
-package cmspooner.slidehome;
-
-import java.util.ArrayList;
-import java.util.Collections;
+package cmspooner.slidehome.activities;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PaintFlagsDrawFilter;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.util.Log;
+import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
+import cmspooner.slidehome.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
+/**
+ * SlideHome main activity
+ *
+ * @author Chris Spooner <cmspooner@gmail.com>
+ * @author Jakub Chrzanowski <jakub@chrzanowski.info>
+ */
 public class SlideHome extends Activity {
 
+    private static final String TAG = SlideHome.class.getCanonicalName();
+
 	private boolean isFullscreen;
-
 	private static ApplicationList mApplications;
-
 	private GridView mGrid;
-
 	private final BroadcastReceiver mApplicationsReceiver = new ApplicationsIntentReceiver();
-
-	private boolean mHomeDown;
-	private boolean mBackDown;
-	private boolean mMenuDown;
-	private boolean mSearchDown;
 
 	// private Bundle mSavedInstanceState;
 
@@ -59,7 +42,10 @@ public class SlideHome extends Activity {
 	// private long sTime;
 	// private long mTime;
 
-	/** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState
+     */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,11 +66,9 @@ public class SlideHome extends Activity {
 
 		loadApplications(true);
 
-		// System.out.println("------------------mApplications------------");
 		// for (ApplicationInfo each: mApplications){
-		// System.out.println("     "+each.title);
+		//     Log.d(TAG, each.title);
 		// }
-		// System.out.println("-------------------------------------------");
 
 		bindApplications();
 
@@ -93,36 +77,37 @@ public class SlideHome extends Activity {
 		// apps);
 	}
 
+
 	@Override
 	protected void onResume() {
 		super.onResume();
-
-		System.out.println("-->SlideHome.java: onResume Called");
-
+        Log.d(TAG, "onResume Called");
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
 
-		System.out.println("-->SlideHome.java: restoreState Called");
+        Log.d(TAG, "restoreState Called");
 
 		if (state == null) {
-			System.out.println("---> no Bundle");
+            Log.d(TAG, "no Bundle");
 			return;
 		}
-		System.out.println("---> Bundle!");
+
+        Log.d(TAG, "Bundle!");
 
 		if (mApplications == null) {
-			System.out.println("**> no mApplications");
+            Log.d(TAG, "no mApplications");
 
 			if (state.containsKey("apps")) {
-				System.out.println("**> apps was saved!");
-				ArrayList<ResolveInfo> apps = state
-						.getParcelableArrayList("apps");
+                Log.d(TAG, "apps was saved!");
+
+				ArrayList<ResolveInfo> apps = state.getParcelableArrayList("apps");
 				mApplications = new ApplicationList(apps);
 			} else {
-				System.out.println("---> no 'apps' key");
+				Log.d(TAG, "no 'apps' key");
+				
 				mApplications = new ApplicationList();
 			}
 		}
@@ -132,10 +117,9 @@ public class SlideHome extends Activity {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 
-		System.out.println("-->SlideHome.java: onSaveInstanceState Called");
+		Log.d(TAG, "onSaveInstanceState Called");
 
 		ArrayList<ResolveInfo> apps = mApplications.getAppsList();
-
 		outState.putParcelableArrayList("apps", (ArrayList<ResolveInfo>) apps);
 	}
 
@@ -143,7 +127,7 @@ public class SlideHome extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 
-		System.out.println("-->SlideHome.java: onDestroy Called");
+        Log.d(TAG, "onDestroy Called");
 
 		// Remove the callback for the cached drawables or we leak
 		// the previous Home screen on orientation change
@@ -155,9 +139,12 @@ public class SlideHome extends Activity {
 		unregisterReceiver(mApplicationsReceiver);
 	}
 
+    /**
+     * @param isLaunching
+     */
 	private void loadApplications(boolean isLaunching) {
 
-		System.out.println("-->SlideHome.java: loadApplications Called");
+        Log.d(TAG, "loadApplications Called");
 
 		if (isLaunching && mApplications != null) {
 			return;
@@ -165,16 +152,14 @@ public class SlideHome extends Activity {
 
 		if (mApplications == null) {
 			mApplications = new ApplicationList();
-
 		} else {
 			mApplications.loadApplications();
 		}
-
 	}
 
 	private void updateApplicationList() {
 
-		System.out.println("-->SlideHome.java: updateApplicationList Called");
+        Log.d(TAG, "updateApplicationList Called");
 
 		mApplications.loadApplicationList();
 	}
@@ -186,7 +171,7 @@ public class SlideHome extends Activity {
 	 */
 	private void bindApplications() {
 
-		System.out.println("-->SlideHome.java: bindApplications Called");
+        Log.d(TAG, "bindApplications Called");
 
 		if (mGrid == null) {
 			mGrid = (GridView) findViewById(R.id.all_apps);
@@ -200,7 +185,7 @@ public class SlideHome extends Activity {
 
 	private void registerIntentReceivers() {
 
-		System.out.println("-->SlideHome.java: registerIntentReceivers Called");
+        Log.d(TAG, "registerIntentReceivers Called");
 
 		IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
 		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
@@ -210,85 +195,42 @@ public class SlideHome extends Activity {
 	}
 
 	@Override
-	public boolean dispatchKeyEvent(KeyEvent event) {
-
-		System.out.println("-->SlideHome.java: dispatchKeyEvent Called");
-
-		if (event.getAction() == KeyEvent.ACTION_DOWN) {
-			switch (event.getKeyCode()) {
-			case KeyEvent.KEYCODE_BACK:
-				mBackDown = true;
-				return true;
-			case KeyEvent.KEYCODE_HOME:
-				mHomeDown = true;
-				return true;
-			case KeyEvent.KEYCODE_MENU:
-				mMenuDown = true;
-				return true;
-			case KeyEvent.KEYCODE_SEARCH:
-				mSearchDown = true;
-				return true;
-			}
-		} else if (event.getAction() == KeyEvent.ACTION_UP) {
-			switch (event.getKeyCode()) {
-			case KeyEvent.KEYCODE_BACK:
-				if (!event.isCanceled()) {
-					// Do BACK behavior.
-				}
-				mBackDown = true;
-				return true;
-			case KeyEvent.KEYCODE_HOME:
-				if (!event.isCanceled()) {
-					// Do HOME behavior.
-				}
-				mHomeDown = true;
-				return true;
-			case KeyEvent.KEYCODE_MENU:
-				if (!event.isCanceled()) {
-					// Do Menu behavior.
-					openOptionsMenu();
-				}
-				mMenuDown = true;
-				return true;
-			case KeyEvent.KEYCODE_SEARCH:
-				if (!event.isCanceled()) {
-					// Do Search behavior.
-				}
-				mSearchDown = true;
-				return true;
-			}
-		}
-
-		return super.dispatchKeyEvent(event);
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
-		System.out.println("-->SlideHome.java: onCreateOptionsMenu Called");
+        Log.d(TAG, "onCreateOptionsMenu Called");
 
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.apps_menu, menu);
-		return true;
-	}
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.apps_menu, menu);
+        return true;
+    }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
-		System.out.println("-->SlideHome.java: onOptionsItemSelected Called");
+        Log.d(TAG, "onOptionsItemSelected Called");
 
 		// Handle item selection
 		switch (item.getItemId()) {
-		case R.id.phone_settings:
-			System.out.println("--->Phone Settings!");
-			startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
-			return true;
-		case R.id.home_settings:
-			System.out.println("--->Home Settings!");
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
+
+            // phone setting
+            case R.id.phone_settings:
+                Log.d(TAG, "Phone Settings!");
+                startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                break;
+
+            // home settings
+            case R.id.home_settings:
+                Log.d(TAG, "Home Settings!");
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+
+            // default action
+            default:
+                return super.onOptionsItemSelected(item);
 		}
+
+        return true;
 	}
 
 	/**
@@ -299,20 +241,13 @@ public class SlideHome extends Activity {
 	private class ApplicationsAdapter extends ArrayAdapter<ApplicationInfo> {
 		private Rect mOldBounds = new Rect();
 
-		public ApplicationsAdapter(Context context,
-				ArrayList<ApplicationInfo> apps) {
+		public ApplicationsAdapter(Context context, ArrayList<ApplicationInfo> apps) {
 			super(context, 0, apps);
-
-			System.out
-					.println("-->SlideHome.java.ApplicationsAdapter: ApplicationsAdapter Called");
-
+            Log.d(TAG, "ApplicationsAdapter Called");
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-
-			System.out
-					.println("-->SlideHome.java.ApplicationsAdapter: getView Called");
 
 			final ApplicationInfo info = mApplications.get(position);
 
@@ -326,10 +261,8 @@ public class SlideHome extends Activity {
 
 			if (!info.filtered) {
 				final Resources resources = getContext().getResources();
-				int width = (int) resources
-						.getDimension(android.R.dimen.app_icon_size);
-				int height = (int) resources
-						.getDimension(android.R.dimen.app_icon_size);
+				int width = (int) resources.getDimension(android.R.dimen.app_icon_size);
+				int height = (int) resources.getDimension(android.R.dimen.app_icon_size);
 
 				final int iconWidth = icon.getIntrinsicWidth();
 				final int iconHeight = icon.getIntrinsicHeight();
@@ -340,8 +273,7 @@ public class SlideHome extends Activity {
 					painter.setIntrinsicHeight(height);
 				}
 
-				if (width > 0 && height > 0
-						&& (width < iconWidth || height < iconHeight)) {
+				if (width > 0 && height > 0 && (width < iconWidth || height < iconHeight)) {
 					final float ratio = (float) iconWidth / iconHeight;
 
 					if (iconWidth > iconHeight) {
@@ -350,12 +282,11 @@ public class SlideHome extends Activity {
 						width = (int) (height * ratio);
 					}
 
-					final Bitmap.Config c = icon.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888
-							: Bitmap.Config.RGB_565;
+					final Bitmap.Config c = icon.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
 					final Bitmap thumb = Bitmap.createBitmap(width, height, c);
 					final Canvas canvas = new Canvas(thumb);
-					canvas.setDrawFilter(new PaintFlagsDrawFilter(
-							Paint.DITHER_FLAG, 0));
+					canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.DITHER_FLAG, 0));
+                    
 					// Copy the old bounds to restore them later
 					// If we were to do oldBounds = icon.getBounds(),
 					// the call to setBounds() that follows would
@@ -370,26 +301,20 @@ public class SlideHome extends Activity {
 				}
 			}
 
-			final TextView textView = (TextView) convertView
-					.findViewById(R.id.label);
-			textView.setCompoundDrawablesWithIntrinsicBounds(null, icon, null,
-					null);
+			final TextView textView = (TextView) convertView.findViewById(R.id.label);
+			textView.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
 			textView.setText(info.title);
 
 			return convertView;
 		}
 	}
 
-	private class ApplicationLauncher implements
-			AdapterView.OnItemClickListener {
-		public void onItemClick(AdapterView parent, View v, int position,
-				long id) {
+	private class ApplicationLauncher implements AdapterView.OnItemClickListener {
+		public void onItemClick(AdapterView parent, View v, int position, long id) {
 
-			System.out
-					.println("-->SlideHome.java.ApplicationLauncher: onItemClick Called");
+            Log.d(TAG, "onItemClick Called");
 
-			ApplicationInfo app = (ApplicationInfo) parent
-					.getItemAtPosition(position);
+			ApplicationInfo app = (ApplicationInfo) parent.getItemAtPosition(position);
 			startActivity(app.intent);
 		}
 	}
@@ -398,8 +323,7 @@ public class SlideHome extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
-			System.out
-					.println("-->SlideHome.java.ApplicationsIntentReceiver: onReceive Called");
+            Log.d(TAG, "onReceive Called");
 
 			updateApplicationList();
 			loadApplications(false);
@@ -413,7 +337,7 @@ public class SlideHome extends Activity {
 
 		public ApplicationList() {
 
-			System.out.println("-->ApplicationList: ApplicationList() Called");
+            Log.d(TAG, "ApplicationList() Called");
 
 			this.applications = new ArrayList<ApplicationInfo>();
 			this.loadApplicationList();
@@ -422,8 +346,7 @@ public class SlideHome extends Activity {
 
 		public ApplicationList(ArrayList<ResolveInfo> appsList) {
 
-			System.out
-					.println("-->ApplicationList: ApplicationList(appsList) Called");
+            Log.d(TAG, "ApplicationList(appsList) Called");
 
 			this.applications = new ArrayList<ApplicationInfo>();
 			this.setAppsList(appsList);
@@ -448,30 +371,27 @@ public class SlideHome extends Activity {
 
 		public void setAppsList(ArrayList<ResolveInfo> appsList) {
 
-			System.out.println("-->ApplicationList: setAppsList Called");
+            Log.d(TAG, "setAppsList Called");
 
 			this.appsList = appsList;
 		}
 
 		private void loadApplicationList() {
 
-			System.out
-					.println("-->ApplicationList: loadApplicationList Called");
+            Log.d(TAG, "loadApplicationList Called");
 
 			PackageManager manager = getPackageManager();
 
 			Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
 			mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-			this.appsList = (ArrayList<ResolveInfo>) manager
-					.queryIntentActivities(mainIntent, 0);
-			Collections.sort(this.appsList,
-					new ResolveInfo.DisplayNameComparator(manager));
+			this.appsList = (ArrayList<ResolveInfo>) manager.queryIntentActivities(mainIntent, 0);
+			Collections.sort(this.appsList, new ResolveInfo.DisplayNameComparator(manager));
 		}
 
 		public void loadApplications() {
 
-			System.out.println("-->ApplicationList: loadApplications Called");
+            Log.d(TAG, "loadApplications Called");
 
 			PackageManager manager = getPackageManager();
 
@@ -493,13 +413,10 @@ public class SlideHome extends Activity {
 					ResolveInfo info = this.appsList.get(i);
 
 					application.title = info.loadLabel(manager);
-					application
-							.setActivity(
-									new ComponentName(
-											info.activityInfo.applicationInfo.packageName,
-											info.activityInfo.name),
-									Intent.FLAG_ACTIVITY_NEW_TASK
-											| Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+					application.setActivity(new ComponentName(
+                            info.activityInfo.applicationInfo.packageName,
+                            info.activityInfo.name),
+                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 					application.icon = info.activityInfo.loadIcon(manager);
 
 					this.applications.add(application);

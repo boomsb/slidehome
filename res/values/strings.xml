@@ -6,4 +6,7 @@
     <!-- Home Menus -->
     <string name="menu_home_settings">Home Settings</string>
     <string name="menu_phone_settings">Phone Settings</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
 </resources>
