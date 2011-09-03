@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">slidehome</string>
+    <string name="app_name">SlideHome</string>
     <string name="show_all_apps">All</string>
     
     <!-- Home Menus -->
