@@ -27,6 +27,7 @@ import java.util.Collections;
  * @author Chris Spooner <cmspooner@gmail.com>
  * @author Jakub Chrzanowski <jakub@chrzanowski.info>
  */
+// This is a test
 public class SlideHome extends Activity {
 
     private static final String TAG = SlideHome.class.getCanonicalName();
