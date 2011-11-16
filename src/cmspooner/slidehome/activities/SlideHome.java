@@ -191,7 +191,13 @@ public class SlideHome extends Activity {
 		IntentFilter filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
 		filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
 		filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+		filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
 		filter.addDataScheme("package");
+		registerReceiver(mApplicationsReceiver, filter);
+		
+		filter = new IntentFilter();
+		filter.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_AVAILABLE);
+		filter.addAction(Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE);
 		registerReceiver(mApplicationsReceiver, filter);
 	}
 
@@ -249,6 +255,8 @@ public class SlideHome extends Activity {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			
+            Log.d(TAG, "getView Called");
 
 			final ApplicationInfo info = mApplications.get(position);
 
@@ -311,7 +319,7 @@ public class SlideHome extends Activity {
 	}
 
 	private class ApplicationLauncher implements AdapterView.OnItemClickListener {
-		public void onItemClick(AdapterView parent, View v, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
             Log.d(TAG, "onItemClick Called");
 
@@ -325,6 +333,7 @@ public class SlideHome extends Activity {
 		public void onReceive(Context context, Intent intent) {
 
             Log.d(TAG, "onReceive Called");
+            Log.d(TAG, intent.getAction());
 
 			updateApplicationList();
 			loadApplications(false);
