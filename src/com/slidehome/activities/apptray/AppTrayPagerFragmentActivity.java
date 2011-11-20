@@ -7,10 +7,13 @@ import com.slidehome.R;
 import com.slidehome.providers.AppTrayItem.AppTrayItems;
 
 import android.content.ContentResolver;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 
 /**
  * 
@@ -18,16 +21,24 @@ import android.support.v4.view.ViewPager;
  *
  */
 public class AppTrayPagerFragmentActivity extends FragmentActivity implements ViewPager.OnPageChangeListener {
-
+	private static final String TAG = AppTrayPagerFragmentActivity.class.getName();
+	
 	private ViewPager mViewPager;
 	private AppTrayPagerAdapter mPagerAdapter;
+	private int appTrayPageCount;
 
 	@Override
 	protected void onCreate(Bundle saveInstanceState){
+		Log.d(TAG, "onCreate called.");
+		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		appTrayPageCount = prefs.getInt("appTrayPageCount", 3);
+		
+		Log.d(TAG, "Creating " + appTrayPageCount + " pages.");
+		
 		ContentResolver cr = getContentResolver();
-		int pageCount = 3;
 		List<Fragment> fragments = new Vector<Fragment>();
-		for (int i = 1; i <= pageCount; i++) {
+		for (int i = 1; i <= appTrayPageCount; i++) {
 			cr.query(
 					AppTrayItems.CONTENT_URI, 
 					AppTrayItems.PROJECTION, 

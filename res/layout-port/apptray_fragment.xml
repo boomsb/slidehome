@@ -4,6 +4,11 @@
     android:layout_height="fill_parent"
     android:orientation="horizontal" >
 
-    
+    <GridView
+        android:id="@+id/apptray_page_grid"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="none"
+        android:stretchMode="spacingWidth" />
 
 </LinearLayout>

@@ -47,7 +47,7 @@ public class SlideHomeProvider extends ContentProvider {
 					+ AppTrayItems.PAGE + " INTEGER, "
 					+ AppTrayItems.POSITION + " INTEGER, "
 					+ AppTrayItems.PACKAGE + " TEXT, "
-					+ AppTrayItems.CLASS + " TEXT");
+					+ AppTrayItems.CLASS + " TEXT);");
 		}
 
 		@Override
@@ -112,6 +112,7 @@ public class SlideHomeProvider extends ContentProvider {
 	@Override
 	public boolean onCreate() {
 		mDatabaseHelper = new DatabaseHelper(getContext());
+		mDatabaseHelper.getWritableDatabase();
 		return true;
 	}
 

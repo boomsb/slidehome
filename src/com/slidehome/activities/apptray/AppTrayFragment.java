@@ -4,6 +4,7 @@ import com.slidehome.R;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +20,16 @@ public class AppTrayFragment extends Fragment {
 	
 	private int pageNumber;
 	
-	public AppTrayFragment() {
-		Bundle args = getArguments();
-		this.pageNumber = (int)args.getInt(PAGE);
-	}
+	public AppTrayFragment() {}
 	
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    	super.onCreateView(inflater, container, savedInstanceState);
+    	
+		Bundle args = getArguments();
+		pageNumber = (int)args.getInt(PAGE);
+    	
+    	Log.d(AppTrayFragment.class.getName(), "onCreateView called for page " + pageNumber + ".");
+    	
     	return inflater.inflate(R.layout.apptray_fragment, container, false);
     }
 }
