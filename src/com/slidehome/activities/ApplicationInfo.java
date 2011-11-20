@@ -1,4 +1,4 @@
-package cmspooner.slidehome.activities;
+package com.slidehome.activities;
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2007 The Android Open Source Project
+<!--
+     Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,29 +16,35 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:home="http://schemas.android.com/apk/res/cmspooner.slidehome"
-    android:orientation="vertical"
+    xmlns:home="http://schemas.android.com/apk/res/com.slidehome"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/app_tray"
+        android:layout_width="156dp"
+        android:layout_height="fill_parent" />
 
     <!-- All applications on the top side of the screen -->
-    <GridView android:id="@+id/all_apps"
-        android:background="@drawable/application_background"
-        android:persistentDrawingCache="animation|scrolling"
+
+    <GridView
+        android:id="@+id/all_apps"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1.0"
         android:alwaysDrawnWithCache="true"
-        android:scrollbars="vertical"
+        android:background="@drawable/application_background"
+        android:columnWidth="78dp"
         android:drawSelectorOnTop="false"
         android:listSelector="@drawable/grid_selector"
         android:numColumns="auto_fit"
-        android:columnWidth="78dp"
-        android:stretchMode="spacingWidth"
-        android:layout_weight="1.0"
-        android:layout_height="fill_parent"
-        android:layout_width="fill_parent"
+        android:persistentDrawingCache="animation|scrolling"
+        android:scrollbars="vertical"
         android:stackFromBottom="false"
+        android:stretchMode="spacingWidth"
         android:visibility="visible" />
 
     <!-- Favorites and Recents -->
-    
 
 </LinearLayout>

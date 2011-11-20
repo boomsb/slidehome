@@ -1,4 +1,4 @@
-package cmspooner.slidehome.activities;
+package com.slidehome.activities;
 
 import android.app.Activity;
 import android.content.*;
@@ -10,13 +10,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
-import cmspooner.slidehome.R;
+import com.slidehome.R;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,13 +28,13 @@ import java.util.Collections;
  *
  * @author Chris Spooner <cmspooner@gmail.com>
  * @author Jakub Chrzanowski <jakub@chrzanowski.info>
+ * @author Bradley Booms <bradley.booms@gmail.com>
  */
 // This is a test
 public class SlideHome extends Activity {
 
     private static final String TAG = SlideHome.class.getCanonicalName();
 
-	private boolean isFullscreen;
 	private static ApplicationList mApplications;
 	private GridView mGrid;
 	private final BroadcastReceiver mApplicationsReceiver = new ApplicationsIntentReceiver();
@@ -54,13 +56,11 @@ public class SlideHome extends Activity {
 		System.out.println("-->SlideHome.java: onCreate Called");
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-		if (isFullscreen) {
-			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-					WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		}
+		
 		setContentView(R.layout.home);
-
+		
+		updatePreferences();
+		
 		registerIntentReceivers();
 
 		setDefaultKeyMode(DEFAULT_KEYS_SEARCH_LOCAL);
@@ -79,10 +79,35 @@ public class SlideHome extends Activity {
 	}
 
 
+	private void updatePreferences() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+		if (prefs.getBoolean("showStatusBar", true)) {
+			Log.d(TAG, "Clear Fullscreen Flag");
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		} else {
+			Log.d(TAG, "Set Fullscreen Flag");
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		}
+
+		ViewPager pager = (ViewPager) findViewById(R.id.app_tray);
+		int visibility;
+		if (prefs.getBoolean("enableAppTray", false)) {
+			visibility = View.VISIBLE;
+		} else {
+			visibility = View.GONE;
+		}
+		Log.d(TAG, "Set AppTray visibility to: " + visibility);
+		pager.setVisibility(visibility);
+	}
+
+
 	@Override
 	protected void onResume() {
 		super.onResume();
         Log.d(TAG, "onResume Called");
+        
+		updatePreferences();
 	}
 
 	@Override
@@ -427,6 +452,7 @@ public class SlideHome extends Activity {
                             info.activityInfo.applicationInfo.packageName,
                             info.activityInfo.name),
                             Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+					
 					application.icon = info.activityInfo.loadIcon(manager);
 
 					this.applications.add(application);

@@ -1,9 +1,9 @@
-package cmspooner.slidehome.activities;
+package com.slidehome.activities;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.util.Log;
-import cmspooner.slidehome.R;
+import com.slidehome.R;
 
 
 /**
