@@ -1,5 +1,6 @@
 package com.slidehome.activities;
 
+import android.app.SearchManager;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -50,6 +51,7 @@ public class SlideHome extends FragmentActivity {
 	
 	private ViewPager mPager;
 	private AppTrayPagerAdapter mPagerAdapter;
+	private ApplicationInfo mSelectedApp;
 	
 	// private Bundle mSavedInstanceState;
 
@@ -71,7 +73,7 @@ public class SlideHome extends FragmentActivity {
 		
 		setContentView(R.layout.home);
 		
-		updatePreferences();
+		initializePreferences();
 		
 		registerIntentReceivers();
 
@@ -91,7 +93,7 @@ public class SlideHome extends FragmentActivity {
 	}
 
 
-	private void updatePreferences() {
+	private void initializePreferences() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		showStatusBar = prefs.getBoolean("showStatusBar", true);
 		if (showStatusBar) {
@@ -141,7 +143,9 @@ public class SlideHome extends FragmentActivity {
 		
 		mPager = (ViewPager)super.findViewById(R.id.app_tray);
 		mPager.setAdapter(mPagerAdapter);
-		//mPager.setOnPageChangeListener(this);
+		
+		initializeGrid();
+		mGrid.setOnItemLongClickListener(new ApplicationSelector());
 	}
 
 
@@ -150,7 +154,15 @@ public class SlideHome extends FragmentActivity {
 		super.onResume();
         Log.d(TAG, "onResume Called");
         
-		updatePreferences();
+		initializePreferences();
+	}
+	
+	@Override
+	public boolean onSearchRequested() {
+        Log.d(TAG, "onSearchRequested Called");
+		
+        startActivity(new Intent(SearchManager.INTENT_ACTION_GLOBAL_SEARCH));
+        return super.onSearchRequested();
 	}
 
 	@Override
@@ -242,15 +254,19 @@ public class SlideHome extends FragmentActivity {
 
         Log.d(TAG, "bindApplications Called");
 
-		if (mGrid == null) {
-			mGrid = (GridView) findViewById(R.id.all_apps);
-		}
+		initializeGrid();
 
 		mGrid.setAdapter(new ApplicationsAdapter(this, mApplications.getApps()));
 		mGrid.setSelection(0);
 
 		mGrid.setOnItemClickListener(new ApplicationLauncher());
-		mGrid.setOnItemLongClickListener(new ApplicationLongClickListener());
+	}
+
+
+	private void initializeGrid() {
+		if (mGrid == null) {
+			mGrid = (GridView) findViewById(R.id.all_apps);
+		}
 	}
 
 	private void registerIntentReceivers() {
@@ -394,6 +410,27 @@ public class SlideHome extends FragmentActivity {
 
 			ApplicationInfo app = (ApplicationInfo) parent.getItemAtPosition(position);
 			startActivity(app.intent);
+		}
+	}
+
+	private class ApplicationSelector implements AdapterView.OnItemLongClickListener {
+		public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
+            Log.d(TAG, "onItemLongClick Called");
+
+			mSelectedApp = (ApplicationInfo) parent.getItemAtPosition(position);
+			mGrid.setEnabled(false);
+			
+			return true;
+		}
+	}
+	
+	@Override
+	public void onBackPressed(){
+		if (mSelectedApp != null) {
+			mSelectedApp = null;
+			mGrid.setEnabled(true);
+		} else {
+			super.onBackPressed();
 		}
 	}
 

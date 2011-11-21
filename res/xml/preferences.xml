@@ -10,7 +10,7 @@
             android:title="Show Status Bar" />
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="enableAppTray"
             android:summary="uncheck to disable the app tray."
             android:title="Enable App Tray" />
