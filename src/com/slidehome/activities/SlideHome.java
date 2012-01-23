@@ -4,11 +4,7 @@ import android.app.SearchManager;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
-import android.graphics.*;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.PaintDrawable;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -17,12 +13,11 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.*;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.TextView;
 import com.slidehome.R;
 import com.slidehome.activities.apptray.AppTrayFragment;
 import com.slidehome.activities.apptray.AppTrayPagerAdapter;
+import com.slidehome.providers.AppTrayItem;
 import com.slidehome.providers.AppTrayItem.AppTrayItems;
 
 import java.util.ArrayList;
@@ -40,10 +35,7 @@ import java.util.Vector;
 // This is a test
 public class SlideHome extends FragmentActivity {
 
-	private int appTrayPageCount;
-	private boolean showStatusBar;
-	private boolean enableAppTray;
-    private static final String TAG = SlideHome.class.getCanonicalName();
+    public static final String TAG = SlideHome.class.getCanonicalName();
 
 	private static ApplicationList mApplications;
 	private GridView mGrid;
@@ -95,8 +87,7 @@ public class SlideHome extends FragmentActivity {
 
 	private void initializePreferences() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		showStatusBar = prefs.getBoolean("showStatusBar", true);
-		if (showStatusBar) {
+		if (prefs.getBoolean("showStatusBar", true)) {
 			Log.d(TAG, "Clear Fullscreen Flag");
 			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		} else {
@@ -104,44 +95,49 @@ public class SlideHome extends FragmentActivity {
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 
-		ViewPager pager = (ViewPager) findViewById(R.id.app_tray);
+		mPager = (ViewPager) findViewById(R.id.app_tray);
 		int visibility;
-		enableAppTray = prefs.getBoolean("enableAppTray", true);
-		if (enableAppTray) {
+		if (prefs.getBoolean("enableAppTray", true)) {
 			visibility = View.VISIBLE;
-			initializePager();
+			initializePager(Integer.decode(prefs.getString("appTrayPageCount", "3")));
 		} else {
 			visibility = View.GONE;
 		}
 		Log.d(TAG, "Set AppTray visibility to: " + visibility);
-		pager.setVisibility(visibility);
+		mPager.setVisibility(visibility);
 	}
 
 
-	private void initializePager() {
+	private void initializePager(int appTrayPageCount) {
 	
-		Log.d(TAG, "onCreate called.");
-		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		appTrayPageCount = Integer.decode(prefs.getString("appTrayPageCount", "3"));
-		
-		Log.d(TAG, "Creating " + appTrayPageCount + " pages.");
+		Log.d(TAG, "initializePager creating " + appTrayPageCount + " pages.");
 		
 		ContentResolver cr = getContentResolver();
 		List<Fragment> fragments = new Vector<Fragment>();
 		for (int i = 1; i <= appTrayPageCount; i++) {
-			cr.query(
+			ArrayList<AppTrayItem> items = new ArrayList<AppTrayItem>();
+			Cursor itemCursor = cr.query(
 					AppTrayItems.CONTENT_URI, 
 					AppTrayItems.PROJECTION, 
 					AppTrayItems.PAGE + " = ?", 
 					new String[] {"" + i}, 
 					AppTrayItems.POSITION + " ASC");
+			if (itemCursor.moveToFirst()){
+				do {
+					items.add(new AppTrayItem(itemCursor));
+				} while (itemCursor.moveToNext());
+			}
 			Bundle args = new Bundle();
 			args.putInt(AppTrayFragment.PAGE, i);
+			args.putParcelableArrayList(AppTrayFragment.APPTRAY_ITEMS, items);
 			fragments.add(Fragment.instantiate(this, AppTrayFragment.class.getName(), args));
 		}
 		
-		mPager = (ViewPager)super.findViewById(R.id.app_tray);
+		mPagerAdapter = new AppTrayPagerAdapter(super.getSupportFragmentManager(), fragments);
+		
+		if (mPager == null){
+			mPager = (ViewPager)super.findViewById(R.id.app_tray);
+		}
 		mPager.setAdapter(mPagerAdapter);
 		
 		initializeGrid();
@@ -192,6 +188,10 @@ public class SlideHome extends FragmentActivity {
 				mApplications = new ApplicationList();
 			}
 		}
+
+		if (state.containsKey("app_tray_page")) {
+			mPager.setCurrentItem(state.getInt("app_tray_page"), false);
+		}
 	}
 
 	@Override
@@ -202,6 +202,7 @@ public class SlideHome extends FragmentActivity {
 
 		ArrayList<ResolveInfo> apps = mApplications.getAppsList();
 		outState.putParcelableArrayList("apps", (ArrayList<ResolveInfo>) apps);
+		outState.putInt("app_tray_page", mPager.getCurrentItem());
 	}
 
 	@Override
@@ -256,7 +257,7 @@ public class SlideHome extends FragmentActivity {
 
 		initializeGrid();
 
-		mGrid.setAdapter(new ApplicationsAdapter(this, mApplications.getApps()));
+		mGrid.setAdapter(new ApplicationInfoArrayAdapter(this, mApplications.getApps()));
 		mGrid.setSelection(0);
 
 		mGrid.setOnItemClickListener(new ApplicationLauncher());
@@ -325,100 +326,12 @@ public class SlideHome extends FragmentActivity {
         return true;
 	}
 
-	/**
-	 * FROM ANDROID...No Changes...yet
-	 * 
-	 * GridView adapter to show the list of all installed applications.
-	 */
-	private class ApplicationsAdapter extends ArrayAdapter<ApplicationInfo> {
-		private Rect mOldBounds = new Rect();
-
-		public ApplicationsAdapter(Context context, ArrayList<ApplicationInfo> apps) {
-			super(context, 0, apps);
-            Log.d(TAG, "ApplicationsAdapter Called");
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			
-            Log.d(TAG, "getView Called");
-
-			final ApplicationInfo info = mApplications.get(position);
-
-			if (convertView == null) {
-				final LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater.inflate(R.layout.application, parent,
-						false);
-			}
-
-			Drawable icon = info.icon;
-
-			if (!info.filtered) {
-				final Resources resources = getContext().getResources();
-				int width = (int) resources.getDimension(android.R.dimen.app_icon_size);
-				int height = (int) resources.getDimension(android.R.dimen.app_icon_size);
-
-				final int iconWidth = icon.getIntrinsicWidth();
-				final int iconHeight = icon.getIntrinsicHeight();
-
-				if (icon instanceof PaintDrawable) {
-					PaintDrawable painter = (PaintDrawable) icon;
-					painter.setIntrinsicWidth(width);
-					painter.setIntrinsicHeight(height);
-				}
-
-				if (width > 0 && height > 0 && (width < iconWidth || height < iconHeight)) {
-					final float ratio = (float) iconWidth / iconHeight;
-
-					if (iconWidth > iconHeight) {
-						height = (int) (width / ratio);
-					} else if (iconHeight > iconWidth) {
-						width = (int) (height * ratio);
-					}
-
-					final Bitmap.Config c = icon.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
-					final Bitmap thumb = Bitmap.createBitmap(width, height, c);
-					final Canvas canvas = new Canvas(thumb);
-					canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.DITHER_FLAG, 0));
-                    
-					// Copy the old bounds to restore them later
-					// If we were to do oldBounds = icon.getBounds(),
-					// the call to setBounds() that follows would
-					// change the same instance and we would lose the
-					// old bounds
-					mOldBounds.set(icon.getBounds());
-					icon.setBounds(0, 0, width, height);
-					icon.draw(canvas);
-					icon.setBounds(mOldBounds);
-					icon = info.icon = new BitmapDrawable(thumb);
-					info.filtered = true;
-				}
-			}
-
-			final TextView textView = (TextView) convertView.findViewById(R.id.label);
-			textView.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
-			textView.setText(info.title);
-
-			return convertView;
-		}
-	}
-
-	private class ApplicationLauncher implements AdapterView.OnItemClickListener {
-		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
-            Log.d(TAG, "onItemClick Called");
-
-			ApplicationInfo app = (ApplicationInfo) parent.getItemAtPosition(position);
-			startActivity(app.intent);
-		}
-	}
-
 	private class ApplicationSelector implements AdapterView.OnItemLongClickListener {
 		public boolean onItemLongClick(AdapterView<?> parent, View v, int position, long id) {
             Log.d(TAG, "onItemLongClick Called");
 
 			mSelectedApp = (ApplicationInfo) parent.getItemAtPosition(position);
-			mGrid.setEnabled(false);
+			parent.setEnabled(false);
 			
 			return true;
 		}
@@ -525,18 +438,9 @@ public class SlideHome extends FragmentActivity {
 				this.applications.clear();
 
 				for (int i = 0; i < count; i++) {
-					ApplicationInfo application = new ApplicationInfo();
 					ResolveInfo info = this.appsList.get(i);
 
-					application.title = info.loadLabel(manager);
-					application.setActivity(new ComponentName(
-                            info.activityInfo.applicationInfo.packageName,
-                            info.activityInfo.name),
-                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-					
-					application.icon = info.activityInfo.loadIcon(manager);
-
-					this.applications.add(application);
+					this.applications.add(new ApplicationInfo(info, manager));
 				}
 			}
 		}

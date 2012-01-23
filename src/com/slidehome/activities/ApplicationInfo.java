@@ -17,6 +17,8 @@ package com.slidehome.activities;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
@@ -25,43 +27,50 @@ import android.util.Log;
  * and an icon.
  *
  * @author Chris Spooner <cmspooner@gmail.com>
+ * @author Bradley Booms <bradley.booms@gmail.com>
  */
-class ApplicationInfo {
+public class ApplicationInfo {
 
     private static final String TAG = ApplicationInfo.class.getCanonicalName();
 
     /**
      * The application name.
      */
-    CharSequence title;
+    public CharSequence title;
 
     /**
      * The intent used to start the application.
      */
-    Intent intent;
+    public Intent intent;
 
     /**
      * The application icon.
      */
-    Drawable icon;
+    public Drawable icon;
 
     /**
      * When set to true, indicates that the icon has been resized.
      */
-    boolean filtered;
-
-    /**
-     * Creates the application intent based on a component name and various launch flags.
-     *
-     * @param className the class name of the component representing the intent
-     * @param launchFlags the launch flags
-     */
-    final void setActivity(ComponentName className, int launchFlags) {
-        intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setComponent(className);
-        intent.setFlags(launchFlags);
+    public boolean filtered;
+    
+    public ApplicationInfo() {}
+    
+    public ApplicationInfo(Drawable icon) {
+    	this.icon = icon;
     }
+
+    public ApplicationInfo(ResolveInfo info, PackageManager manager) {
+		title = info.loadLabel(manager);
+        
+		intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setComponent(new ComponentName(
+                info.activityInfo.applicationInfo.packageName,
+                info.activityInfo.name));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+		
+        icon = info.activityInfo.loadIcon(manager);
+	}
 
     @Override
     public boolean equals(Object o) {

@@ -21,9 +21,9 @@
     android:layout_height="fill_parent"
     android:orientation="horizontal" >
 
-    <android.support.v4.view.ViewPager
+    <com.slidehome.activities.apptray.AppTrayPager
         android:id="@+id/app_tray"
-        android:layout_width="156dp"
+        android:layout_width="162dp"
         android:layout_height="fill_parent" />
 
     <!-- All applications on the top side of the screen -->
